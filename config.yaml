@@ -1,17 +1,16 @@
 credentials:
   usernames:
     A1:
-      email: jsmith@example.com
+      email: a1@example.com
       name: Användare A1
-      password: '$2b$12$mnJL0fxDbAZjScwaD1N7gONa6AEvE3mONb9sXtz2pE.AEfEAVPRju'
+      password: 'DITT_HASHADE_LÖSENORD_FÖR_A1'
     A2:
-      email: rwallace@example.com
-      name: Rebecca Wallace
-      password: '$2b$12$mnJL0fxDbAZjScwaD1N7gONa6AEvE3mONb9sXtz2pE.AEfEAVPRju'
+      email: a2@example.com
+      name: Användare A2
+      password: 'DITT_HASHADE_LÖSENORD_FÖR_A2'
   cookie:
     expiry_days: 30
-    key: 'some_signature_key' # Byt gärna ut denna mot en slumpmässig sträng
-    name: 'some_cookie_name'
+    key: 'en_hemlig_nyckel' # Kan vara vilken textsträng som helst
+    name: 'chattbot_cookie'
   preauthorized:
-    emails:
-    - m.danneman@gmail.com
+    emails: [] # Kan vara tom

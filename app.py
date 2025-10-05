@@ -51,7 +51,7 @@ def anslut_till_db():
     client = chromadb.PersistentClient(path=DB_PATH)
     return client.get_collection(name=COLLECTION_NAME)
 
-# --- KÄRNFUNKTIONER (oförändrade) ---
+# --- KÄRNFUNKTIONER ---
 def hämta_kontext(fråga, model, collection):
     query_embedding = model.encode(fråga).tolist()
     results = collection.query(query_embeddings=[query_embedding], n_results=10, include=["documents", "metadatas"])
@@ -84,14 +84,15 @@ SVAR:"""
 st.set_page_config(layout="wide", page_title="Cosmic Databas Chatt")
 embedding_model, collection = ladda_embedding_modell(), anslut_till_db()
 
-# (Hantering av Chatthistorik är oförändrad)
 if "chat_history" not in st.session_state: st.session_state.chat_history = ladda_json(HISTORY_FILE)
 if "active_chat_id" not in st.session_state: st.session_state.active_chat_id = None
+
 def new_chat():
     chat_id = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     st.session_state.chat_history[chat_id] = []
     st.session_state.active_chat_id = chat_id
     spara_json(st.session_state.chat_history, HISTORY_FILE)
+
 with st.sidebar:
     st.header("Chatt-historik")
     if st.button("➕ Ny Chatt", use_container_width=True):
@@ -101,21 +102,19 @@ with st.sidebar:
         chat_title = st.session_state.chat_history[chat_id][0]['content'][:40] + "..." if st.session_state.chat_history[chat_id] else f"Chatt från {chat_id}"
         if st.button(chat_title, key=chat_id, use_container_width=True):
             st.session_state.active_chat_id = chat_id; st.rerun()
+
 if not st.session_state.active_chat_id and st.session_state.chat_history: st.session_state.active_chat_id = sorted_chat_ids[0]
 elif not st.session_state.chat_history: new_chat()
-st.title("💬 Chattbot för Cosmic Databas")
 
+st.title("💬 Chattbot för Cosmic Databas")
 active_chat_messages = st.session_state.chat_history.get(st.session_state.active_chat_id, [])
 
-# --- NY LOGIK FÖR ATT VISA MEDDELANDEN OCH INTERAKTIV FEEDBACK ---
 for i, message in enumerate(active_chat_messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         
         if message["role"] == "assistant":
             feedback_key_prefix = f"feedback_{st.session_state.active_chat_id}_{i}"
-            
-            # Hämta status för feedback från session state
             feedback_status = st.session_state.get(f"{feedback_key_prefix}_status", None)
 
             if not feedback_status:
@@ -141,20 +140,16 @@ for i, message in enumerate(active_chat_messages):
             
             elif feedback_status == "dåligt":
                 st.warning("Tack, jag lär mig av detta.")
-                # Visa en ny input-box för att ställa en följdfråga
                 if followup_prompt := st.text_input("Kan du beskriva problemet med några fler ord? Jag gör ett nytt försök.", key=f"{feedback_key_prefix}_followup"):
-                    # Behandla detta som en helt ny fråga från användaren
                     active_chat_messages.append({"role": "user", "content": followup_prompt})
                     st.session_state.chat_history[st.session_state.active_chat_id] = active_chat_messages
                     spara_json(st.session_state.chat_history, HISTORY_FILE)
                     st.rerun()
 
-# --- Hantera ny input (huvud-input-rutan) ---
 if prompt := st.chat_input("Hur kan jag hjälpa dig?"):
     active_chat_messages.append({"role": "user", "content": prompt})
     st.rerun()
 
-# Om det senaste meddelandet är från en användare, generera ett svar
 if active_chat_messages and active_chat_messages[-1]["role"] == "user":
     prompt = active_chat_messages[-1]["content"]
     with st.chat_message("assistant"):

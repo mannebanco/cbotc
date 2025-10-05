@@ -1,4 +1,3 @@
-# app.py (Version med korrekt inloggning och YAML-struktur)
 import streamlit as st
 import requests
 from datetime import datetime
@@ -10,7 +9,7 @@ from yaml.loader import SafeLoader
 
 # --- KONFIGURATION ---
 API_SERVER_URL = "http://cbotc.ddns.net:8000/chat"
-API_KEY = "Trp4-gtA9-7hQ-pWz-3kX" # Se till att denna matchar din api_server.py
+API_KEY = "Trp4-gtA9-7hQ-pWz-3kX"
 
 HISTORY_DIR = Path("chatt_historik")
 
@@ -19,17 +18,16 @@ try:
     with open('config.yaml') as file:
         config = yaml.load(file, Loader=SafeLoader)
 except FileNotFoundError:
-    st.error("FEL: `config.yaml`-filen hittades inte. Se till att du har laddat upp den till din GitHub repository.")
+    st.error("FEL: `config.yaml`-filen hittades inte.")
     st.stop()
 
 # --- KORRIGERAD INITIERING AV AUTHENTICATOR ---
-# Läser nu alla cookie-inställningar direkt från den korrekt strukturerade YAML-filen.
+# Den sista 'preauthorized'-parametern är borttagen för att matcha den nya versionen.
 authenticator = stauth.Authenticate(
     config['credentials'],
     config['credentials']['cookie']['name'],
     config['credentials']['cookie']['key'],
-    config['credentials']['cookie']['expiry_days'],
-    config['credentials']['preauthorized']
+    config['credentials']['cookie']['expiry_days']
 )
 
 # --- FUNKTIONER ---
@@ -51,14 +49,8 @@ def spara_chatt_historik(username, historik):
         json.dump(historik, f, indent=4, ensure_ascii=False)
 
 def anropa_ai_server(fråga, chatt_historik):
-    headers = {
-        "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "question": fråga,
-        "history": chatt_historik
-    }
+    headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
+    payload = {"question": fråga, "history": chatt_historik}
     try:
         response = requests.post(API_SERVER_URL, json=payload, headers=headers, timeout=90)
         response.raise_for_status()

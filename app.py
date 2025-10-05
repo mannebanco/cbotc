@@ -1,4 +1,4 @@
-# app.py (Version "Fjärrkontroll" med korrekt inloggning)
+# app.py (Version med korrekt inloggning och YAML-struktur)
 import streamlit as st
 import requests
 from datetime import datetime
@@ -15,14 +15,21 @@ API_KEY = "Trp4-gtA9-7hQ-pWz-3kX" # Se till att denna matchar din api_server.py
 HISTORY_DIR = Path("chatt_historik")
 
 # --- Ladda användardata från config.yaml ---
-with open('config.yaml') as file:
-    config = yaml.load(file, Loader=SafeLoader)
+try:
+    with open('config.yaml') as file:
+        config = yaml.load(file, Loader=SafeLoader)
+except FileNotFoundError:
+    st.error("FEL: `config.yaml`-filen hittades inte. Se till att du har laddat upp den till din GitHub repository.")
+    st.stop()
 
+# --- KORRIGERAD INITIERING AV AUTHENTICATOR ---
+# Läser nu alla cookie-inställningar direkt från den korrekt strukturerade YAML-filen.
 authenticator = stauth.Authenticate(
     config['credentials'],
-    'some_cookie_name',
-    'some_signature_key',
-    cookie_expiry_days=30
+    config['credentials']['cookie']['name'],
+    config['credentials']['cookie']['key'],
+    config['credentials']['cookie']['expiry_days'],
+    config['credentials']['preauthorized']
 )
 
 # --- FUNKTIONER ---
@@ -63,7 +70,6 @@ def anropa_ai_server(fråga, chatt_historik):
 # --- STREAMLIT APPLIKATIONSLOGIK ---
 st.set_page_config(layout="wide", page_title="Cosmic Databas Chatt")
 
-# <-- KODRADEN NEDAN ÄR KORRIGERAD -->
 name, authentication_status, username = authenticator.login()
 
 if st.session_state["authentication_status"]:

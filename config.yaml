@@ -3,14 +3,14 @@ credentials:
     A1:
       email: a1@example.com
       name: Användare A1
-      password: 'DITT_HASHADE_LÖSENORD_FÖR_A1'
+      password: '$2b$12$TdJODg2sMm6gBkQNuOQY9etncXNjvHAWbBcC9VPoZWXHyOuavYJXe'
     A2:
       email: a2@example.com
       name: Användare A2
-      password: 'DITT_HASHADE_LÖSENORD_FÖR_A2'
+      password: '$2b$12$TdJODg2sMm6gBkQNuOQY9etncXNjvHAWbBcC9VPoZWXHyOuavYJXe'
   cookie:
     expiry_days: 30
-    key: 'en_hemlig_nyckel' # Kan vara vilken textsträng som helst
+    key: 'banankalas' # Kan vara vilken textsträng som helst
     name: 'chattbot_cookie'
   preauthorized:
     emails: [] # Kan vara tom

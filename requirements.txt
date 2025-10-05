@@ -4,3 +4,4 @@ PyYAML
 requests
 torch
 sentence-transformers
+chromadb

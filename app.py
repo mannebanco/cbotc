@@ -7,8 +7,10 @@ import streamlit_authenticator as stauth
 import yaml
 from yaml.loader import SafeLoader
 
-# --- KONFIGURATION ---
+# --- KONFIGURATION (UPPDATERAD) ---
+# Adressen till din AI-server som körs lokalt, vidarekopplad via Codespaces.
 API_SERVER_URL = "http://cbotc.ddns.net:8000/chat"
+# Din hemliga API-nyckel. Måste vara samma som i din api_server.py.
 API_KEY = "Trp4-gtA9-7hQ-pWz-3kX"
 
 HISTORY_DIR = Path("chatt_historik")
@@ -18,16 +20,15 @@ try:
     with open('config.yaml') as file:
         config = yaml.load(file, Loader=SafeLoader)
 except FileNotFoundError:
-    st.error("FEL: `config.yaml`-filen hittades inte.")
+    st.error("FEL: `config.yaml`-filen hittades inte. Se till att den finns i din repository.")
     st.stop()
 
-# --- KORRIGERAD INITIERING AV AUTHENTICATOR ---
-# Den sista 'preauthorized'-parametern är borttagen för att matcha den nya versionen.
+# Förenklad initiering av authenticator för maximal kompatibilitet
 authenticator = stauth.Authenticate(
     config['credentials'],
-    config['credentials']['cookie']['name'],
-    config['credentials']['cookie']['key'],
-    config['credentials']['cookie']['expiry_days']
+    'cosmic_cookie',
+    'random_signature_key', # Denna kan du byta ut mot valfri textsträng
+    cookie_expiry_days=30
 )
 
 # --- FUNKTIONER ---
@@ -56,16 +57,23 @@ def anropa_ai_server(fråga, chatt_historik):
         response.raise_for_status()
         data = response.json()
         return data.get('answer', 'Fick ett felaktigt svar från servern.')
+    except requests.exceptions.RequestException as e:
+        return f"FEL: Kunde inte ansluta till AI-servern. Kontrollera att din lokala `api_server.py` körs och att porten är korrekt vidarekopplad. Fel: {e}"
     except Exception as e:
-        return f"Kunde inte ansluta till AI-servern: {e}"
+        return f"Ett oväntat fel uppstod: {e}"
 
 # --- STREAMLIT APPLIKATIONSLOGIK ---
 st.set_page_config(layout="wide", page_title="Cosmic Databas Chatt")
 
-name, authentication_status, username = authenticator.login()
+st.title("💬 Chattbot för Cosmic Databas")
 
-if st.session_state["authentication_status"]:
-    # --- KOD KÖRS ENDAST OM ANVÄNDAREN ÄR INLOGGAD ---
+# KORRIGERAD INLOGGNINGSLOGIK
+authenticator.login()
+
+if st.session_state.get("authentication_status"):
+    name = st.session_state["name"]
+    username = st.session_state["username"]
+    
     authenticator.logout('Logout', 'sidebar')
     st.sidebar.write(f'Välkommen *{name}*')
 
@@ -95,7 +103,6 @@ if st.session_state["authentication_status"]:
     elif not st.session_state.chat_history:
         new_chat()
 
-    st.title("💬 Chattbot för Cosmic Databas")
     active_chat_messages = st.session_state.chat_history.get(st.session_state.active_chat_id, [])
 
     for message in active_chat_messages:
@@ -113,7 +120,7 @@ if st.session_state["authentication_status"]:
         spara_chatt_historik(username, st.session_state.chat_history)
         st.rerun()
 
-elif st.session_state["authentication_status"] is False:
+elif st.session_state.get("authentication_status") is False:
     st.error('Användarnamn/lösenord är felaktigt')
-elif st.session_state["authentication_status"] is None:
+elif st.session_state.get("authentication_status") is None:
     st.warning('Vänligen ange ditt användarnamn och lösenord')

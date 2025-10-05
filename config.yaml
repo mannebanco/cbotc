@@ -1,0 +1,22 @@
+# config.yaml
+credentials:
+  usernames:
+    # Första användaren
+    A1: # Detta är användarnamnet man loggar in med
+      email: jsmith@example.com
+      name: John Smith # Detta är namnet som visas när man är inloggad
+      password: '$2b$12$mnJL0fxDbAZjScwaD1N7gONa6AEvE3mONb9sXtz2pE.AEfEAVPRju' # <-- Här klistrar du in den HASHADE versionen av lösenordet
+
+    # Andra användaren
+    A2:
+      email: rwallace@example.com
+      name: Rebecca Wallace
+      password: '$2b$12$mnJL0fxDbAZjScwaD1N7gONa6AEvE3mONb9sXtz2pE.AEfEAVPRju'
+
+cookie:
+  expiry_days: 30
+  key: some_signature_key # Denna kan vara vad som helst
+  name: some_cookie_name # Denna kan vara vad som helst
+preauthorized:
+  emails:
+  - m.danneman@gmail.com

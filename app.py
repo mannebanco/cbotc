@@ -1,4 +1,4 @@
-# app.py (Version "Fjärrkontroll")
+# app.py (Version "Fjärrkontroll" med korrekt inloggning)
 import streamlit as st
 import requests
 from datetime import datetime
@@ -9,18 +9,20 @@ import yaml
 from yaml.loader import SafeLoader
 
 # --- KONFIGURATION ---
-# Adressen till din hemma-server och din hemliga nyckel
-API_SERVER_URL = "http://cbotc.ddns.net:8000/chat"  # Byt ut om du valde ett annat hostname
-API_KEY = "Trp4-gtA9-7hQ-pWz-3kX" # Måste vara samma som i api_server.py
+API_SERVER_URL = "http://cbotc.ddns.net:8000/chat"
+API_KEY = "Trp4-gtA9-7hQ-pWz-3kX" # Se till att denna matchar din api_server.py
 
-HISTORY_DIR = Path("chatt_historik") # Sparar historik i en undermapp på servern
+HISTORY_DIR = Path("chatt_historik")
 
 # --- Ladda användardata från config.yaml ---
 with open('config.yaml') as file:
     config = yaml.load(file, Loader=SafeLoader)
 
 authenticator = stauth.Authenticate(
-    config['credentials'], 'cookie_name', 'signature_key', cookie_expiry_days=30
+    config['credentials'],
+    'some_cookie_name',
+    'some_signature_key',
+    cookie_expiry_days=30
 )
 
 # --- FUNKTIONER ---
@@ -42,7 +44,6 @@ def spara_chatt_historik(username, historik):
         json.dump(historik, f, indent=4, ensure_ascii=False)
 
 def anropa_ai_server(fråga, chatt_historik):
-    """Skickar frågan och historiken till din hemma-server."""
     headers = {
         "Authorization": f"Bearer {API_KEY}",
         "Content-Type": "application/json"
@@ -62,9 +63,11 @@ def anropa_ai_server(fråga, chatt_historik):
 # --- STREAMLIT APPLIKATIONSLOGIK ---
 st.set_page_config(layout="wide", page_title="Cosmic Databas Chatt")
 
-name, authentication_status, username = authenticator.login('Login', 'main')
+# <-- KODRADEN NEDAN ÄR KORRIGERAD -->
+name, authentication_status, username = authenticator.login()
 
 if st.session_state["authentication_status"]:
+    # --- KOD KÖRS ENDAST OM ANVÄNDAREN ÄR INLOGGAD ---
     authenticator.logout('Logout', 'sidebar')
     st.sidebar.write(f'Välkommen *{name}*')
 

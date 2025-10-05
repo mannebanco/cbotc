@@ -2,3 +2,5 @@ streamlit
 streamlit-authenticator
 PyYAML
 requests
+torch
+sentence-transformers

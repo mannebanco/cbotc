@@ -22,6 +22,14 @@ def ladda_json(filsökväg):
     return {} if str(filsökväg).endswith('history.json') else []
 
 def spara_json(data, filsökväg):
+    """
+    UPPDATERAD: Denna funktion säkerställer nu att mappen för filen existerar
+    innan den försöker skriva till den. Detta löser FileNotFound-felet.
+    """
+    # Säkerställ att föräldramappen existerar. Skapar den om den inte finns.
+    filsökväg.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Skriv filen som vanligt
     with open(filsökväg, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 

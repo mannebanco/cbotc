@@ -135,17 +135,21 @@ if st.session_state.get("authentication_status"):
                             spara_json(st.session_state.chat_history, HISTORY_FILE); st.rerun()
                     if alt_index < len(svarsalternativ) - 1: st.divider()
                 
-                # --- NY KOD FÖR ATT VISA KÄLLOR ---
+                # --- UPPDATERAD KOD FÖR ATT VISA KÄLLOR ---
                 källor = message.get('källor', [])
                 if källor:
                     with st.expander("Källor som använts för svaret"):
                         unique_sources = set()
                         for meta in källor:
+                            # Försöker hämta ID från både 'ID' och 'docplus_id'
                             ärende_id = meta.get('ID') or meta.get('docplus_id')
+                            # Försöker hämta titel från både 'Problem' och 'titel'
                             titel = meta.get('Problem') or meta.get('titel')
 
+                            # Bygger upp strängen baserat på vilken information som finns
                             if ärende_id and titel:
-                                unique_sources.add(f"Ärende {ärende_id}: {titel}")
+                                # Använder det nya formatet du ville ha
+                                unique_sources.add(f"Ärende: {titel} ({ärende_id})")
                             elif titel:
                                 unique_sources.add(titel)
                             elif meta.get('filename'):

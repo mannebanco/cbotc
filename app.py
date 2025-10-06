@@ -134,6 +134,25 @@ if st.session_state.get("authentication_status"):
                             st.session_state.chat_history[st.session_state.active_chat_id] = active_chat_messages
                             spara_json(st.session_state.chat_history, HISTORY_FILE); st.rerun()
                     if alt_index < len(svarsalternativ) - 1: st.divider()
+                
+                # --- NY KOD FÖR ATT VISA KÄLLOR ---
+                källor = message.get('källor', [])
+                if källor:
+                    with st.expander("Källor som använts för svaret"):
+                        unique_sources = set()
+                        for meta in källor:
+                            ärende_id = meta.get('ID') or meta.get('docplus_id')
+                            titel = meta.get('Problem') or meta.get('titel')
+
+                            if ärende_id and titel:
+                                unique_sources.add(f"Ärende {ärende_id}: {titel}")
+                            elif titel:
+                                unique_sources.add(titel)
+                            elif meta.get('filename'):
+                                unique_sources.add(meta.get('filename'))
+                        
+                        for source_str in sorted(list(unique_sources)):
+                            st.write(f"• {source_str}")
 
     if prompt := st.chat_input("Hur kan jag hjälpa dig?"):
         active_chat_messages.append({"role": "user", "content": prompt})
@@ -157,3 +176,4 @@ elif st.session_state.get("authentication_status") is False:
     st.error('Användarnamn/lösenord är felaktigt')
 elif st.session_state.get("authentication_status") is None:
     st.warning('Vänligen ange ditt användarnamn och lösenord')
+
